@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tjoeun.Galphi.dao.MybatisDAO">
+		
+	<!-- 로그인 -->
+	<select id="Login" parameterType="String" resultType="int">
+        select count(*) from usertable where id = #{id} and pw = #{password}
+    </select>
+    
+    <select id="IdCheck" parameterType="String" resultType="int">
+        select count(*) from usertable where id = #{id}
+    </select>
+    
+    <select id="nickname" parameterType="String" resultType="String">
+        select nick from usertable where id = #{id} and pw = #{password}
+    </select>
+    
+    <select id="nickCheck" parameterType="String" resultType="int">
+        select COUNT(*) from usertable where nick = #{nickname}
+    </select>
+		
+	<select id="accountIdCheck" parameterType="String" resultType="int">
+        select count(*) from usertable where id = #{id}
+    </select>
+    
+    <insert id="insert" parameterType="java.util.HashMap">
+        insert into usertable(usernum, username, nick, id, pw)
+        values ((select nvl(max(usernum), 0) + 1 from usertable), #{username}, #{nickname}, #{id}, #{password})
+    </insert>
+		
+	<!-- 메인글 전체 개수를 얻어온다. -->
+	<select id="selectCount" resultType="int">
+		select count(*) from book 
+	</select>
+	
+	<!-- 1페이지 분량의 메인글을 얻어온다. -->
+	<select id="selectList" parameterType="java.util.HashMap" resultType="vo">
+		<![CDATA[
+		select * from (
+			select rownum rnum, TT.* from (
+				select * from book
+			) TT where rownum <= #{endNo} 
+		) where rnum >= #{startNo}
+		]]>
+	</select>	
+	
+	<!-- 1페이지 분량의 베스트 도서를 얻어온다. -->
+	<select id="selectBestList" parameterType="java.util.HashMap" resultType="vo">
+		<![CDATA[
+		select * from (
+			select rownum rnum, TT.* from (
+				select * from book order by avg desc
+			) TT where rownum <= 10
+		) where rnum >= #{startNo}
+		]]>
+	</select>
+	
+	<!-- 1페이지 분량의 오늘의 추천 도서를 얻어온다. -->
+	<select id="selectDailyList" parameterType="java.util.HashMap" resultType="vo">
+		<![CDATA[
+		select * from (
+			select rownum rnum, TT.* from (
+				select * from book where avg > 9 order by DBMS_RANDOM.RANDOM
+			) TT where rownum <= 10
+		) where rnum >= #{startNo}
+		]]>
+	</select>
+	
+	<!-- 신간도서 전체 개수를 얻어온다. -->
+	<select id="selectNewCount" resultType="int">
+		select count(*) from book where pDate > sysdate - 150
+	</select>
+		
+	<!-- 1페이지 분량의 신간 도서를 얻어온다. -->
+	<select id="selectNewList" parameterType="java.util.HashMap" resultType="vo">
+		<![CDATA[
+		select * from (
+			select rownum rnum, TT.* from (
+				select * from book where pDate > sysdate - 150 order by pdate desc
+			) TT where rownum <= #{endNo} 
+		) where rnum >= #{startNo}
+		]]>
+	</select>
+	
+	<!-- 글 1건을 얻어온다. -->
+	<select id="selectByISBN" parameterType="int" resultType="vo">
+		select * from book where ISBN = #{ISBN}
+	</select>
+	
+	<!-- 카테고리 소설 전체 개수를 얻어온다. -->
+	<select id="selectCategoryCount" parameterType="String" resultType="int">
+		select count(*) from book where category = #{categoryList}
+	</select>
+	
+	<!-- 1페이지 분량의 카테고리 소설 도서를 얻어온다. -->
+	<select id="selectCategoryList" parameterType="com.tjoeun.Galphi.vo.Param" resultType="vo">
+		<![CDATA[
+		select * from (
+			select rownum rnum, TT.* from (
+				select * from book where category = #{categoryList}
+			) TT where rownum <= #{endNo}
+		) where rnum >= #{startNo}
+		]]>
+	</select>
+	
+	<!-- 검색된 도서목록 개수 가져오기 -->
+	<select id="selectMultiCount" parameterType="com.tjoeun.Galphi.vo.Param" resultType="int">
+		select count(*) from book where
+		<if test='category == "제목"'>
+			title like '%${item}%'
+		</if>
+		<if test='category == "저자"'>
+			author like '%${item}%'
+		</if>
+		<if test='category == "제목+저자"'>
+			title like '%${item}%' or author like '%${item}%'
+		</if>
+	</select>
+	
+	<!-- 검색된 도서목록 가져오기 -->
+	<select id="selectMultiList" parameterType="com.tjoeun.Galphi.vo.Param" resultType="vo">
+			select * from (
+				select rownum rnum, TT.* from (
+					select * from book where
+						<if test='category == "제목"'>
+							title like '%${item}%'
+						</if>
+						<if test='category == "저자"'>
+							author like '%${item}%'
+						</if>
+						<if test='category == "제목+저자"'>
+							title like '%${item}%' or author like '%${item}%'
+						</if>
+		<![CDATA[
+				) TT where rownum <= #{endNo} 
+			) where rnum >= #{startNo}
+		]]>
+	</select>
+	
+	<select id="selectCommentList" parameterType="int" resultType="co">
+		select * from bookcomment where ISBN = #{ISBN} order by idx desc
+	</select>
+	
+	<select id="selectcommentByIdx" parameterType="int" resultType="co">
+		select * from bookcomment where idx = #{idx}
+	</select>
+	
+	<insert id="insertComment" parameterType="co">
+		insert into bookcomment (ISBN, nick, idx, score, memo)
+		values (#{ISBN}, #{nick}, (select NVL(MAX(IDX), 0) + 1 from bookcomment), #{score}, #{memo})
+	</insert>
+	
+	<update id="update" parameterType="com.tjoeun.Galphi.vo.Param">
+		update book set avg = #{avg} where ISBN = #{ISBN}
+	</update>
+	
+	<delete id="deleteComment" parameterType="co">
+		delete from bookcomment where idx = #{idx}
+	</delete>
+	
+	<update id="updateComment" parameterType="com.tjoeun.Galphi.vo.Param">
+		update bookcomment set memo = #{memo}, score = #{score}
+		where idx = #{idx}
+	</update>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

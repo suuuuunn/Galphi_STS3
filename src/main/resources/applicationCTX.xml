@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="bookVO" class="com.tjoeun.Galphi.vo.BookVO"/>
+	<bean id="bookList" class="com.tjoeun.Galphi.vo.BookList"/>
+	
+	<bean id="bookCommentVO" class="com.tjoeun.Galphi.vo.BookCommentVO"/>
+	<bean id="bookCommentList" class="com.tjoeun.Galphi.vo.BookCommentList"/>
+	
+	<bean id="accountVO" class="com.tjoeun.Galphi.vo.AccountVO"/>
+</beans>
